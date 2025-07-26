@@ -39,16 +39,15 @@ export async function GET(request: NextRequest) {
       data: cart,
     });
 
-  } catch (error: any) {
-    console.error('Error fetching cart:', error);
-    
-    if (error.message === 'No valid token provided') {
+  } catch (error: unknown) {
+    const err = error as Error & { message?: string };
+    console.error('Error fetching cart:', err);
+    if (err.message === 'No valid token provided') {
       return NextResponse.json(
         { success: false, error: 'Authentication required' },
         { status: 401 }
       );
     }
-
     return NextResponse.json(
       { success: false, error: 'Failed to fetch cart' },
       { status: 500 }
@@ -127,18 +126,17 @@ export async function POST(request: NextRequest) {
       data: cart,
     });
 
-  } catch (error: any) {
-    console.error('Error adding to cart:', error);
-    
-    if (error.message === 'No valid token provided') {
+  } catch (error: unknown) {
+    const err = error as Error & { message?: string };
+    console.error('Error adding to cart:', err);
+    if (err.message === 'No valid token provided') {
       return NextResponse.json(
         { success: false, error: 'Authentication required' },
         { status: 401 }
       );
     }
-
     return NextResponse.json(
-      { success: false, error: error.message || 'Failed to add item to cart' },
+      { success: false, error: err.message || 'Failed to add item to cart' },
       { status: 400 }
     );
   }
@@ -197,16 +195,15 @@ export async function PUT(request: NextRequest) {
       data: cart,
     });
 
-  } catch (error: any) {
-    console.error('Error updating cart:', error);
-    
-    if (error.message === 'No valid token provided') {
+  } catch (error: unknown) {
+    const err = error as Error & { message?: string };
+    console.error('Error updating cart:', err);
+    if (err.message === 'No valid token provided') {
       return NextResponse.json(
         { success: false, error: 'Authentication required' },
         { status: 401 }
       );
     }
-
     return NextResponse.json(
       { success: false, error: 'Failed to update cart' },
       { status: 500 }
@@ -227,16 +224,15 @@ export async function DELETE(request: NextRequest) {
       message: 'Cart cleared successfully',
     });
 
-  } catch (error: any) {
-    console.error('Error clearing cart:', error);
-    
-    if (error.message === 'No valid token provided') {
+  } catch (error: unknown) {
+    const err = error as Error & { message?: string };
+    console.error('Error clearing cart:', err);
+    if (err.message === 'No valid token provided') {
       return NextResponse.json(
         { success: false, error: 'Authentication required' },
         { status: 401 }
       );
     }
-
     return NextResponse.json(
       { success: false, error: 'Failed to clear cart' },
       { status: 500 }

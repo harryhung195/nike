@@ -46,7 +46,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ sessionId: session.id });
 
   } catch (error: any) {
-    console.error('Error creating Stripe session:', error);
-    return NextResponse.json({ error: 'Failed to create Stripe session' }, { status: 500 });
+        const err = error as Error;
+        console.error('Error creating Stripe session:', err);
+        return NextResponse.json({ error: 'Failed to create Stripe session' }, { status: 500 });
   }
 }

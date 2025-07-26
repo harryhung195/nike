@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search');
 
     // Build query object
-    const query: any = {};
+    const query: Record<string, unknown> = {};
     
     if (category) {
       query.category = { $regex: category, $options: 'i' };
@@ -80,8 +80,9 @@ export async function POST(request: NextRequest) {
 
   } catch (error: any) {
     console.error('Error creating product:', error);
+    const err = error as Error;
     return NextResponse.json(
-      { success: false, error: error.message || 'Failed to create product' },
+      { success: false, error: err.message || 'Failed to create product' },
       { status: 400 }
     );
   }

@@ -106,10 +106,11 @@ export async function PUT(
       data: product,
     });
 
-  } catch (error: any) {
+    } catch (error: unknown) {
     console.error('Error updating product:', error);
-    return NextResponse.json(
-      { success: false, error: error.message || 'Failed to update product' },
+      const err = error as Error;
+      return NextResponse.json(
+        { success: false, error: err.message || 'Failed to update product' },
       { status: 400 }
     );
   }

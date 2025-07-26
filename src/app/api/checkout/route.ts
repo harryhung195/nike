@@ -5,6 +5,14 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2024-06-20',
 });
 
+type CartItem = {
+  name: string;
+  image?: string;
+  price: string | number;
+  size?: string;
+  quantity: number;
+};
+
 export async function POST(request: NextRequest) {
   try {
     const { items, email, userId } = await request.json();
@@ -17,9 +25,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Email is required' }, { status: 400 });
     }
 
-    // Create line items for Stripe Checkout
-    const line_items = items.map((item: any) => {
-      // Parse price safely, support string or number
+    const line_items = items.map((item: CartItem) => {
       let priceNumber = 0;
       if (typeof item.price === 'string') {
         priceNumber = parseFloat(item.price.replace('$', ''));
@@ -39,13 +45,12 @@ export async function POST(request: NextRequest) {
             images: item.image ? [item.image] : [],
             description: `Size: ${item.size || ''}`,
           },
-          unit_amount: Math.round(priceNumber * 100), // convert dollars to cents
+          unit_amount: Math.round(priceNumber * 100),
         },
         quantity: item.quantity,
       };
     });
 
-    // Create a Checkout Session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items,

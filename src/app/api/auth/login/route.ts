@@ -60,10 +60,11 @@ export async function POST(request: NextRequest) {
       },
     });
 
-  } catch (error: any) {
-    console.error('Login error:', error);
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error('Login error:', err);
     return NextResponse.json(
-      { success: false, error: error.message || 'Login failed' },
+      { success: false, error: err.message || 'Login failed' },
       { status: 500 }
     );
   }

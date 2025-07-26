@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 
 export default function OrderSummaryPage() {
   const params = useSearchParams();
-  const [order, setOrder] = useState<any>(null);
+  import { Order } from '@/models/Order';
+  const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -47,7 +48,7 @@ export default function OrderSummaryPage() {
           <div className="mb-4">
             <span className="font-semibold">Items:</span>
             <ul className="ml-4 list-disc">
-              {order.items.map((item: any, idx: number) => (
+              {order.items.map((item, idx: number) => (
                 <li key={idx}>
                   {item.name} x{item.quantity} {item.size ? `(Size: ${item.size})` : ""} - {item.price}
                 </li>

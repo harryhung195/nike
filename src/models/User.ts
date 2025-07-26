@@ -75,10 +75,12 @@ UserSchema.pre('save', async function (next) {
   
   try {
     const salt = await bcrypt.genSalt(12);
-    (this as any).password = await bcrypt.hash((this as any).password, salt);
+    // @ts-expect-error: password may not be typed on this
+    this.password = await bcrypt.hash(this.password, salt);
     next();
-  } catch (error: any) {
-    next(error);
+  } catch (error: unknown) {
+    const err = error as Error;
+    next(err);
   }
 });
 

@@ -63,14 +63,14 @@ export const productAPI = {
     return apiRequest(`/api/products/${id}`);
   },
 
-  create: async (productData: any) => {
+  create: async (productData: Record<string, unknown>) => {
     return apiRequest('/api/products', {
       method: 'POST',
       body: JSON.stringify(productData),
     });
   },
 
-  update: async (id: string, productData: any) => {
+  update: async (id: string, productData: Record<string, unknown>) => {
     return apiRequest(`/api/products/${id}`, {
       method: 'PUT',
       body: JSON.stringify(productData),
@@ -142,7 +142,7 @@ export const orderAPI = {
     return apiRequest(`/api/orders/${id}`);
   },
 
-  create: async (orderData: { items: any[]; shippingAddress: any; total: number }) => {
+  create: async (orderData: { items: unknown[]; shippingAddress: Record<string, unknown>; total: number }) => {
     return apiRequest('/api/orders', {
       method: 'POST',
       body: JSON.stringify(orderData),
@@ -177,7 +177,7 @@ export const userAPI = {
     return apiRequest('/api/user/profile');
   },
 
-  updateProfile: async (userData: any) => {
+  updateProfile: async (userData: Record<string, unknown>) => {
     return apiRequest('/api/user/profile', {
       method: 'PUT',
       body: JSON.stringify(userData),

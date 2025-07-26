@@ -48,7 +48,7 @@ export default function SignInPage() {
           setError('First and last name are required');
           return;
         }
-
+  
         await register(
           `${formData.firstName} ${formData.lastName}`,
           formData.email,
@@ -57,11 +57,12 @@ export default function SignInPage() {
       } else {
         await login(formData.email, formData.password);
       }
-
+  
       // Redirect to home or previous page after successful auth
       router.push('/');
-    } catch (err: any) {
-      setError(err.message || 'Authentication failed');
+    } catch (err: unknown) {
+      const error = err as Error;
+      setError(error.message || 'Authentication failed');
     }
   };
 

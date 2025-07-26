@@ -1,13 +1,14 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { Order } from '@/models/Order';
 
 export default function OrdersPage() {
   const { user, isAuthenticated } = useAuth();
   // Import getAuthToken from lib/api
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const { getAuthToken } = require("@/lib/api");
-  const [orders, setOrders] = useState<any[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -23,8 +24,9 @@ export default function OrdersPage() {
         if (!res.ok) throw new Error("Failed to fetch orders");
         const data = await res.json();
         setOrders(data.orders || data);
-      } catch (err: any) {
-        setError(err.message || "Error fetching orders");
+      } catch (err: unknown) {
+        const error = err as Error;
+        setError(error.message || "Error fetching orders");
       } finally {
         setLoading(false);
       }
@@ -66,7 +68,7 @@ export default function OrdersPage() {
               <div>
                 <span className="font-semibold">Items:</span>
                 <ul className="ml-4 list-disc">
-                  {order.items?.map((item: any, idx: number) => (
+                  {order.items?.map((item, idx: number) => (
                     <li key={idx}>
                       {item.name} x{item.quantity} {item.size ? `(Size: ${item.size})` : ""}
                     </li>

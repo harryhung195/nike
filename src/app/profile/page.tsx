@@ -55,7 +55,7 @@ export default function ProfilePage() {
     setSuccess('');
 
     try {
-      const updateData: any = {
+      const updateData: Record<string, unknown> = {
         firstName: formData.firstName,
         lastName: formData.lastName,
         email: formData.email,
@@ -80,8 +80,9 @@ export default function ProfilePage() {
       } else {
         throw new Error(response.error || 'Failed to update profile');
       }
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const error = err as Error;
+      setError(error.message);
     } finally {
       setLoading(false);
     }

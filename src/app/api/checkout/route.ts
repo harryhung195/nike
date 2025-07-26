@@ -13,8 +13,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No items in cart' }, { status: 400 });
     }
 
+    if (!email) {
+      return NextResponse.json({ error: 'Email is required' }, { status: 400 });
+    }
+
     // Create line items for Stripe Checkout
-    const line_items = items.map((item) => {
+    const line_items = items.map((item: any) => {
+      // Parse price safely, support string or number
+      let priceNumber = 0;
+      if (typeof item.price === 'string') {
+        priceNumber = parseFloat(item.price.replace('$', ''));
+      } else if (typeof item.price === 'number') {
+        priceNumber = item.price;
+      }
+
+      if (isNaN(priceNumber)) {
+        throw new Error('Invalid price format');
+      }
+
       return {
         price_data: {
           currency: 'usd',
@@ -23,7 +39,7 @@ export async function POST(request: NextRequest) {
             images: item.image ? [item.image] : [],
             description: `Size: ${item.size || ''}`,
           },
-          unit_amount: Math.round(parseFloat(item.price.replace('$', '')) * 100), // Amount in cents
+          unit_amount: Math.round(priceNumber * 100), // convert dollars to cents
         },
         quantity: item.quantity,
       };

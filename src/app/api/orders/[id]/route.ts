@@ -2,10 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { connectToMongoDB } from '@/lib/mongodb';
 import Order from '@/models/Order';
 import jwt from 'jsonwebtoken';
+import type { NextApiRequest } from 'next';
+import type { RouteHandlerContext } from 'next/dist/server/future/route-modules/app-route/module';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: RouteHandlerContext
 ) {
   try {
     await connectToMongoDB();
@@ -16,9 +18,8 @@ export async function GET(
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string };
-
     const order = await Order.findOne({
-      _id: params.id,
+      _id: context.params.id,
       userId: decoded.userId,
     }).populate('items.productId');
 
@@ -35,7 +36,7 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: RouteHandlerContext
 ) {
   try {
     await connectToMongoDB();
@@ -50,7 +51,7 @@ export async function PUT(
 
     const order = await Order.findOneAndUpdate(
       {
-        _id: params.id,
+        _id: context.params.id,
         userId: decoded.userId,
       },
       {

@@ -3,6 +3,16 @@ import { connectToMongoDB } from '@/lib/mongodb';
 import Cart from '@/models/Cart';
 import Product from '@/models/Product';
 import jwt from 'jsonwebtoken';
+import mongoose from 'mongoose';
+
+// Define CartItem interface for typing cart items
+interface CartItem {
+  productId: string | mongoose.Types.ObjectId;
+  size?: string;
+  color?: string;
+  quantity: number;
+  price?: number;
+}
 
 // Helper function to get user from token
 async function getUserFromToken(request: NextRequest): Promise<string> {
@@ -95,7 +105,7 @@ export async function POST(request: NextRequest) {
 
     // Check if item already exists in cart
     const existingItemIndex = cart.items.findIndex(
-      (item) =>
+      (item: CartItem) =>
         item.productId.toString() === productId &&
         item.size === size &&
         item.color === color
@@ -165,7 +175,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const itemIndex = cart.items.findIndex(
-      (item) =>
+      (item: CartItem) =>
         item.productId.toString() === productId &&
         item.size === size &&
         item.color === color

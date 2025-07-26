@@ -1,14 +1,14 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { Order } from '@/models/Order';
+import { IOrder } from '@/models/Order';
+import { getAuthToken } from "@/lib/api";
 
 export default function OrdersPage() {
   const { user, isAuthenticated } = useAuth();
-  // Import getAuthToken from lib/api
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const { getAuthToken } = require("@/lib/api");
-  const [orders, setOrders] = useState<Order[]>([]);
+  // ...existing code...
+  const [orders, setOrders] = useState<IOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -32,7 +32,7 @@ export default function OrdersPage() {
       }
     };
     if (isAuthenticated) fetchOrders();
-  }, [isAuthenticated]);
+  }, [isAuthenticated, getAuthToken]);
 
   if (!isAuthenticated) {
     return (
@@ -55,9 +55,9 @@ export default function OrdersPage() {
       ) : (
         <ul className="space-y-6">
           {orders.map((order) => (
-            <li key={order._id} className="border rounded p-4 bg-white shadow">
+            <li key={String(order._id)} className="border rounded p-4 bg-white shadow">
               <div className="mb-2">
-                <span className="font-semibold">Order ID:</span> {order._id}
+                <span className="font-semibold">Order ID:</span> {String(order._id)}
               </div>
               <div className="mb-2">
                 <span className="font-semibold">Date:</span> {order.createdAt ? new Date(order.createdAt).toLocaleString() : "-"}

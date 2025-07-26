@@ -59,24 +59,21 @@ export async function POST(request: NextRequest) {
         data: {
           user: userResponse,
           token,
-        },
-      return NextResponse.json(
-    const err = error as Error;
+        }
+      },
+      { status: 201 }
+    );
+  } catch (error: unknown) {
+    const err = error as { message?: string; code?: number };
     console.error('Registration error:', err);
-    
-    if ((err as any).code === 11000) {
+    if (err.code === 11000) {
       return NextResponse.json(
         { success: false, error: 'Email already exists' },
         { status: 400 }
       );
     }
-        { success: false, error: 'Email already exists' },
-        { status: 400 }
-      );
-    }
-
     return NextResponse.json(
-      { success: false, error: error.message || 'Registration failed' },
+      { success: false, error: err.message || 'Registration failed' },
       { status: 400 }
     );
   }

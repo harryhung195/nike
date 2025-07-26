@@ -3,11 +3,11 @@ import { connectToMongoDB } from '@/lib/mongodb';
 import Order from '@/models/Order';
 import jwt from 'jsonwebtoken';
 
-// GET /api/orders/[id]
-export async function GET(
-  req: NextRequest,
-  context: { params: { id: string } }
-) {
+type ParamsContext = {
+  params: Record<string, string>;
+};
+
+export async function GET(req: NextRequest, { params }: ParamsContext) {
   try {
     await connectToMongoDB();
 
@@ -19,7 +19,7 @@ export async function GET(
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string };
 
     const order = await Order.findOne({
-      _id: context.params.id,
+      _id: params.id,
       userId: decoded.userId,
     }).populate('items.productId');
 
@@ -34,11 +34,7 @@ export async function GET(
   }
 }
 
-// PUT /api/orders/[id]
-export async function PUT(
-  req: NextRequest,
-  context: { params: { id: string } }
-) {
+export async function PUT(req: NextRequest, { params }: ParamsContext) {
   try {
     await connectToMongoDB();
 
@@ -52,7 +48,7 @@ export async function PUT(
 
     const order = await Order.findOneAndUpdate(
       {
-        _id: context.params.id,
+        _id: params.id,
         userId: decoded.userId,
       },
       {

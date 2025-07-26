@@ -13,27 +13,19 @@ async function getUserIdFromToken(request: NextRequest): Promise<string> {
   return decoded.userId;
 }
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest) {
   try {
-    const { id } = params;
     await connectToMongoDB();
 
     const userId = await getUserIdFromToken(request);
 
-    const order = await Order.findOne({ _id: id, userId });
+    // Fetch all orders for this user
+    const orders = await Order.find({ userId }).sort({ createdAt: -1 });
 
-    if (!order) {
-      return NextResponse.json(
-        { success: false, error: 'Order not found' },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json({ success: true, order });
-
+    return NextResponse.json({ success: true, orders });
   } catch (error: unknown) {
     const err = error as Error & { message?: string };
-    console.error('Error fetching order:', err);
+    console.error('Error fetching orders:', err);
 
     if (err.message === 'No valid token provided') {
       return NextResponse.json(
@@ -43,7 +35,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     }
 
     return NextResponse.json(
-      { success: false, error: err.message || 'Failed to fetch order' },
+      { success: false, error: err.message || 'Failed to fetch orders' },
       { status: 500 }
     );
   }

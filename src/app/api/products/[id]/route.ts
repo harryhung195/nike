@@ -6,14 +6,13 @@ import mongoose from 'mongoose';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
     await dbConnect();
 
-    const { id } = params;
+    const { id } = context.params;
 
-    // Validate ObjectId
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json(
         { success: false, error: 'Invalid product ID' },
@@ -21,7 +20,6 @@ export async function GET(
       );
     }
 
-    // Get product
     const product = await Product.findById(id);
 
     if (!product) {
@@ -31,13 +29,11 @@ export async function GET(
       );
     }
 
-    // Get reviews for this product
     const reviews = await Review.find({ productId: id })
       .populate('userId', 'firstName lastName')
       .sort({ createdAt: -1 })
       .limit(10);
 
-    // Calculate average rating
     const reviewStats = await Review.aggregate([
       { $match: { productId: new mongoose.Types.ObjectId(id) } },
       {
@@ -60,7 +56,6 @@ export async function GET(
       success: true,
       data: productWithReviews,
     });
-
   } catch (error) {
     console.error('Error fetching product:', error);
     return NextResponse.json(
@@ -72,15 +67,14 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
     await dbConnect();
 
-    const { id } = params;
+    const { id } = context.params;
     const body = await request.json();
 
-    // Validate ObjectId
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json(
         { success: false, error: 'Invalid product ID' },
@@ -88,11 +82,10 @@ export async function PUT(
       );
     }
 
-    const product = await Product.findByIdAndUpdate(
-      id,
-      body,
-      { new: true, runValidators: true }
-    );
+    const product = await Product.findByIdAndUpdate(id, body, {
+      new: true,
+      runValidators: true,
+    });
 
     if (!product) {
       return NextResponse.json(
@@ -105,12 +98,11 @@ export async function PUT(
       success: true,
       data: product,
     });
-
-    } catch (error: unknown) {
+  } catch (error: unknown) {
     console.error('Error updating product:', error);
-      const err = error as Error;
-      return NextResponse.json(
-        { success: false, error: err.message || 'Failed to update product' },
+    const err = error as Error;
+    return NextResponse.json(
+      { success: false, error: err.message || 'Failed to update product' },
       { status: 400 }
     );
   }
@@ -118,14 +110,13 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
     await dbConnect();
 
-    const { id } = params;
+    const { id } = context.params;
 
-    // Validate ObjectId
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json(
         { success: false, error: 'Invalid product ID' },
@@ -146,7 +137,6 @@ export async function DELETE(
       success: true,
       message: 'Product deleted successfully',
     });
-
   } catch (error) {
     console.error('Error deleting product:', error);
     return NextResponse.json(

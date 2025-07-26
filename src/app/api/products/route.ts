@@ -78,12 +78,12 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
 
-  } catch (error: any) {
-    console.error('Error creating product:', error);
-    const err = error as Error;
-    return NextResponse.json(
-      { success: false, error: err.message || 'Failed to create product' },
-      { status: 400 }
-    );
-  }
+    } catch (error: unknown) {
+        const err = error as Error;
+        console.error('Error creating product:', err);
+        return NextResponse.json(
+            { success: false, error: err.message || 'Failed to create product' },
+            { status: 400 }
+        );
+    }
 }

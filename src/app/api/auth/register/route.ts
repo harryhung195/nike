@@ -60,15 +60,16 @@ export async function POST(request: NextRequest) {
           user: userResponse,
           token,
         },
-      },
-      { status: 201 }
-    );
-
-  } catch (error: any) {
-    console.error('Registration error:', error);
-    
-    if (error.code === 11000) {
       return NextResponse.json(
+    const err = error as Error;
+    console.error('Registration error:', err);
+    
+    if ((err as any).code === 11000) {
+      return NextResponse.json(
+        { success: false, error: 'Email already exists' },
+        { status: 400 }
+      );
+    }
         { success: false, error: 'Email already exists' },
         { status: 400 }
       );

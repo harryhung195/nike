@@ -13,30 +13,25 @@ async function getUserIdFromToken(request: NextRequest): Promise<string> {
   return decoded.userId;
 }
 
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
+    const { id } = params;
     await connectToMongoDB();
 
     const userId = await getUserIdFromToken(request);
 
-    // Fetch all orders for this user
-    const orders = await Order.find({ userId }).sort({ createdAt: -1 });
+    const order = await Order.findOne({ _id: id, userId });
 
-    return NextResponse.json({ success: true, orders });
-  } catch (error: unknown) {
-    const err = error as Error & { message?: string };
-    console.error('Error fetching orders:', err);
-
-    if (err.message === 'No valid token provided') {
-      return NextResponse.json(
-        { success: false, error: 'Authentication required' },
-        { status: 401 }
-      );
+    if (!order) {
+      return NextResponse.json({ success: false, error: 'Order not found' }, { status: 404 });
     }
 
-    return NextResponse.json(
-      { success: false, error: err.message || 'Failed to fetch orders' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: true, order });
+  } catch (error: unknown) {
+    const err = error as Error & { message?: string };
+    if (err.message === 'No valid token provided') {
+      return NextResponse.json({ success: false, error: 'Authentication required' }, { status: 401 });
+    }
+    return NextResponse.json({ success: false, error: err.message || 'Failed to fetch order' }, { status: 500 });
   }
 }

@@ -1,72 +1,57 @@
+// src/app/api/orders/[id]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
+import jwt from 'jsonwebtoken';
 import { connectToMongoDB } from '@/lib/mongodb';
 import Order from '@/models/Order';
-import jwt from 'jsonwebtoken';
 
-// Get user's orders
-export async function GET(req: NextRequest) {
-  try {
-    await connectToMongoDB();
-    
-    const token = req.headers.get('authorization')?.replace('Bearer ', '');
-    if (!token) {
-      return NextResponse.json({ error: 'No token provided' }, { status: 401 });
-    }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string };
-    
-    const orders = await Order.find({ userId: decoded.userId })
-      .populate('items.productId')
-      .sort({ createdAt: -1 });
-    
-    return NextResponse.json(orders);
-  } catch (error) {
-    console.error('Error fetching orders:', error);
-    return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 });
+// Helper to get userId from Bearer token in Authorization header
+async function getUserIdFromToken(request: NextRequest): Promise<string> {
+  const authHeader = request.headers.get('authorization');
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    throw new Error('No valid token provided');
   }
+
+  const token = authHeader.substring(7);
+  const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret') as { userId: string };
+  return decoded.userId;
 }
 
-// Create new order
-export async function POST(req: NextRequest) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
+    const { id } = params;
     await connectToMongoDB();
-    
-    const token = req.headers.get('authorization')?.replace('Bearer ', '');
-    if (!token) {
-      return NextResponse.json({ error: 'No token provided' }, { status: 401 });
+
+    const userId = await getUserIdFromToken(request);
+
+    // Find the order by id and userId to ensure user owns this order
+    const order = await Order.findOne({ _id: id, userId });
+
+    if (!order) {
+      return NextResponse.json(
+        { success: false, error: 'Order not found' },
+        { status: 404 }
+      );
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string };
-    const body = await req.json();
-    
-    const { items, shippingAddress, total } = body;
-    
-    if (!items || !Array.isArray(items) || items.length === 0) {
-      return NextResponse.json({ error: 'Items are required' }, { status: 400 });
+    return NextResponse.json({ success: true, order });
+
+  } catch (error: unknown) {
+    const err = error as Error & { message?: string };
+    console.error('Error fetching order:', err);
+
+    if (err.message === 'No valid token provided') {
+      return NextResponse.json(
+        { success: false, error: 'Authentication required' },
+        { status: 401 }
+      );
     }
-    
-    if (!shippingAddress) {
-      return NextResponse.json({ error: 'Shipping address is required' }, { status: 400 });
-    }
-    
-    const order = new Order({
-      userId: decoded.userId,
-      items,
-      total,
-      status: 'pending',
-      shippingAddress,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    });
-    
-    await order.save();
-    
-    // Populate the order with product details
-    await order.populate('items.productId');
-    
-    return NextResponse.json(order, { status: 201 });
-  } catch (error) {
-    console.error('Error creating order:', error);
-    return NextResponse.json({ error: 'Failed to create order' }, { status: 500 });
+
+    return NextResponse.json(
+      { success: false, error: err.message || 'Failed to fetch order' },
+      { status: 500 }
+    );
   }
 }

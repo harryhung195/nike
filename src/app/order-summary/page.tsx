@@ -1,10 +1,11 @@
+
 "use client";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { Order } from '@/models/Order';
 
 export default function OrderSummaryPage() {
   const params = useSearchParams();
-  import { Order } from '@/models/Order';
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
 

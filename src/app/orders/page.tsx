@@ -7,7 +7,6 @@ import { getAuthToken } from "@/lib/api";
 
 export default function OrdersPage() {
   const { user, isAuthenticated } = useAuth();
-  // ...existing code...
   const [orders, setOrders] = useState<IOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -32,7 +31,7 @@ export default function OrdersPage() {
       }
     };
     if (isAuthenticated) fetchOrders();
-  }, [isAuthenticated, getAuthToken]);
+  }, [isAuthenticated]);  // <-- removed getAuthToken here
 
   if (!isAuthenticated) {
     return (

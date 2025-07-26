@@ -3,11 +3,10 @@ import { connectToMongoDB } from '@/lib/mongodb';
 import Order from '@/models/Order';
 import jwt from 'jsonwebtoken';
 
-type ParamsContext = {
-  params: Record<string, string>;
-};
-
-export async function GET(req: NextRequest, { params }: ParamsContext) {
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
     await connectToMongoDB();
 
@@ -34,7 +33,10 @@ export async function GET(req: NextRequest, { params }: ParamsContext) {
   }
 }
 
-export async function PUT(req: NextRequest, { params }: ParamsContext) {
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
     await connectToMongoDB();
 

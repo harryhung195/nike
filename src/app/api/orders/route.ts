@@ -1,4 +1,3 @@
-// src/app/api/orders/[id]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import { connectToMongoDB } from '@/lib/mongodb';
@@ -9,16 +8,12 @@ async function getUserIdFromToken(request: NextRequest): Promise<string> {
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     throw new Error('No valid token provided');
   }
-
   const token = authHeader.substring(7);
   const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret') as { userId: string };
   return decoded.userId;
 }
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const { id } = params;
     await connectToMongoDB();

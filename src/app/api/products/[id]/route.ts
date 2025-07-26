@@ -4,14 +4,17 @@ import Product from '@/models/Product';
 import Review from '@/models/Review';
 import mongoose from 'mongoose';
 
-// GET /api/products/[id]
-export async function GET(
-  request: NextRequest,
-  context: { params: { id: string } }
-) {
+function getIdFromRequest(request: NextRequest) {
+  const url = new URL(request.url);
+  const segments = url.pathname.split('/');
+  return segments[segments.length - 1];
+}
+
+export async function GET(request: NextRequest) {
   try {
     await dbConnect();
-    const { id } = context.params;
+
+    const id = getIdFromRequest(request);
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json(
@@ -21,6 +24,7 @@ export async function GET(
     }
 
     const product = await Product.findById(id);
+
     if (!product) {
       return NextResponse.json(
         { success: false, error: 'Product not found' },
@@ -64,14 +68,11 @@ export async function GET(
   }
 }
 
-// PUT /api/products/[id]
-export async function PUT(
-  request: NextRequest,
-  context: { params: { id: string } }
-) {
+export async function PUT(request: NextRequest) {
   try {
     await dbConnect();
-    const { id } = context.params;
+
+    const id = getIdFromRequest(request);
     const body = await request.json();
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -97,7 +98,7 @@ export async function PUT(
       success: true,
       data: product,
     });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error updating product:', error);
     const err = error as Error;
     return NextResponse.json(
@@ -107,14 +108,11 @@ export async function PUT(
   }
 }
 
-// DELETE /api/products/[id]
-export async function DELETE(
-  request: NextRequest,
-  context: { params: { id: string } }
-) {
+export async function DELETE(request: NextRequest) {
   try {
     await dbConnect();
-    const { id } = context.params;
+
+    const id = getIdFromRequest(request);
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json(

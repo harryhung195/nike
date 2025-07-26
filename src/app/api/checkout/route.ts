@@ -1,0 +1,52 @@
+import { NextRequest, NextResponse } from 'next/server';
+import Stripe from 'stripe';
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: '2024-06-20',
+});
+
+export async function POST(request: NextRequest) {
+  try {
+    const { items, email, userId } = await request.json();
+
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return NextResponse.json({ error: 'No items in cart' }, { status: 400 });
+    }
+
+    // Create line items for Stripe Checkout
+    const line_items = items.map((item) => {
+      return {
+        price_data: {
+          currency: 'usd',
+          product_data: {
+            name: item.name,
+            images: item.image ? [item.image] : [],
+            description: `Size: ${item.size || ''}`,
+          },
+          unit_amount: Math.round(parseFloat(item.price.replace('$', '')) * 100), // Amount in cents
+        },
+        quantity: item.quantity,
+      };
+    });
+
+    // Create a Checkout Session
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items,
+      mode: 'payment',
+      success_url: `${request.headers.get('origin')}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${request.headers.get('origin')}/cart`,
+      customer_email: email,
+      metadata: {
+        userId: userId || '',
+        items: JSON.stringify(items),
+      },
+    });
+
+    return NextResponse.json({ sessionId: session.id });
+
+  } catch (error: any) {
+    console.error('Error creating Stripe session:', error);
+    return NextResponse.json({ error: 'Failed to create Stripe session' }, { status: 500 });
+  }
+}

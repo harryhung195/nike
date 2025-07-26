@@ -4,7 +4,6 @@ import jwt from 'jsonwebtoken';
 import { connectToMongoDB } from '@/lib/mongodb';
 import Order from '@/models/Order';
 
-// Helper to get userId from Bearer token in Authorization header
 async function getUserIdFromToken(request: NextRequest): Promise<string> {
   const authHeader = request.headers.get('authorization');
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -26,7 +25,6 @@ export async function GET(
 
     const userId = await getUserIdFromToken(request);
 
-    // Find the order by id and userId to ensure user owns this order
     const order = await Order.findOne({ _id: id, userId });
 
     if (!order) {
